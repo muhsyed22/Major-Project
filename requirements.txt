@@ -1,0 +1,31 @@
+# IoHT-Shield Backend Dependencies
+# Install with: pip install -r requirements.txt
+
+# ── Web Framework
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9     # For file uploads
+
+# ── ML
+scikit-learn==1.4.2
+numpy==1.26.4
+pandas==2.2.1
+
+# ── Deep Learning (optional — LSTM model requires this)
+tensorflow==2.15.0          # CPU version; use tensorflow-gpu for GPU
+keras==2.15.0
+
+# ── Blockchain
+web3==6.15.1
+py-solc-x==2.0.0            # Solidity compiler for deployment script
+
+# ── Utilities
+python-dotenv==1.0.1        # Load .env
+pydantic==2.6.4
+httpx==0.27.0               # Async HTTP client
+aiofiles==23.2.1            # Async file I/O
+
+# ── Dev / Testing
+pytest==8.1.1
+pytest-asyncio==0.23.5
+httpx==0.27.0
