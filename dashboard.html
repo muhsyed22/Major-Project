@@ -1,0 +1,1915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IoHT-Shield — Blockchain Anomaly Detection Framework</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg-void:    #02080f;
+  --bg-panel:   #040e1a;
+  --bg-card:    #071525;
+  --bg-card2:   #0a1c30;
+  --border:     #112840;
+  --border-hi:  #0066aa55;
+  --cyan:       #00e5ff;
+  --cyan-dim:   #00e5ff44;
+  --green:      #00ff88;
+  --amber:      #ffb300;
+  --red:        #ff3366;
+  --purple:     #c084fc;
+  --blue:       #3b82f6;
+  --text:       #ccdaee;
+  --muted:      #4a6a88;
+  --font-ui:    'Rajdhani', sans-serif;
+  --font-head:  'Orbitron', monospace;
+  --font-mono:  'Share Tech Mono', monospace;
+  --r:          10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-void);
+  color: var(--text);
+  font-family: var(--font-ui);
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-size: 15px;
+}
+
+/* ── GRID BG ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(0,229,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,229,255,.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, #00204433 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-void); }
+::-webkit-scrollbar-thumb { background: #1a3a5c; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--cyan-dim); }
+
+/* ═══════════════════════════════════════════════
+   LOGIN
+═══════════════════════════════════════════════ */
+#loginScreen {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-void);
+}
+.login-container {
+  width: 100%; max-width: 460px; padding: 20px;
+  animation: fadeUp .7s cubic-bezier(.16,1,.3,1);
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(30px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.login-logo {
+  text-align: center; margin-bottom: 36px;
+}
+.login-icon {
+  width: 80px; height: 80px; margin: 0 auto 18px;
+  background: linear-gradient(135deg, #071525, #0f2a45);
+  border: 1.5px solid var(--cyan);
+  border-radius: 22px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px;
+  box-shadow: 0 0 40px #00e5ff33, inset 0 1px 0 #00e5ff22;
+  animation: iconPulse 3s ease-in-out infinite;
+}
+@keyframes iconPulse {
+  0%,100% { box-shadow: 0 0 30px #00e5ff22, inset 0 1px 0 #00e5ff22; }
+  50%      { box-shadow: 0 0 60px #00e5ff55, inset 0 1px 0 #00e5ff44; }
+}
+.login-logo h1 {
+  font-family: var(--font-head);
+  font-size: 24px; font-weight: 900; letter-spacing: 4px;
+  color: var(--cyan);
+  text-shadow: 0 0 20px var(--cyan-dim);
+}
+.login-logo .subtitle {
+  font-size: 11px; color: var(--muted); letter-spacing: 3px;
+  margin-top: 6px; text-transform: uppercase;
+}
+.login-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 40px;
+  box-shadow: 0 30px 80px #000000aa, 0 0 0 1px #00e5ff0a;
+  position: relative; overflow: hidden;
+}
+.login-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+}
+.field { margin-bottom: 22px; }
+.field label {
+  display: block; font-size: 10px; font-weight: 700;
+  letter-spacing: 3px; color: var(--muted); margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.field-wrap { position: relative; }
+.field-wrap .icon {
+  position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+  font-size: 16px; opacity: .6;
+}
+.field input {
+  width: 100%; background: #020c18; border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px 16px 14px 44px;
+  color: var(--text); font-family: var(--font-mono); font-size: 15px;
+  outline: none; transition: border .2s, box-shadow .2s;
+}
+.field input:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 3px var(--cyan-dim);
+}
+.btn-primary {
+  width: 100%; padding: 16px;
+  background: linear-gradient(135deg, #006688, #009bb5);
+  border: none; border-radius: 12px;
+  color: #fff; font-family: var(--font-ui);
+  font-size: 13px; font-weight: 700; letter-spacing: 4px;
+  cursor: pointer; transition: all .25s;
+  box-shadow: 0 6px 24px #00e5ff22;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 32px #00e5ff44; background: linear-gradient(135deg,#007799,#00bbcc); }
+.btn-primary:active { transform: translateY(0); }
+.login-error { color: var(--red); font-size: 12px; text-align: center; margin-top: 14px; min-height: 16px; font-weight: 600; letter-spacing: 1px; }
+.hint { color: var(--muted); font-size: 11px; text-align: center; margin-top: 20px; letter-spacing: 1px; }
+.hint span { color: var(--cyan); font-family: var(--font-mono); }
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD SHELL
+═══════════════════════════════════════════════ */
+#dashboard { display: none; position: relative; z-index: 1; min-height: 100vh; }
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 60px;
+  background: rgba(4,14,26,.97);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(16px);
+  position: sticky; top: 0; z-index: 100;
+}
+.tb-left { display: flex; align-items: center; gap: 16px; }
+.tb-logo {
+  font-family: var(--font-head);
+  font-size: 16px; font-weight: 900; color: var(--cyan);
+  letter-spacing: 2px;
+}
+.tb-logo span { color: var(--text); opacity: .5; font-weight: 400; }
+.tb-subtitle { font-size: 11px; color: var(--muted); letter-spacing: 2px; border-left: 1px solid var(--border); padding-left: 16px; }
+.tb-right { display: flex; align-items: center; gap: 12px; }
+.live-badge {
+  display: flex; align-items: center; gap: 7px;
+  background: #001a0e; border: 1px solid #004d25;
+  border-radius: 20px; padding: 5px 14px;
+  font-size: 11px; font-weight: 700; color: var(--green);
+  letter-spacing: 2px;
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; }
+.dot-green { background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 1.4s ease-in-out infinite; }
+.dot-red   { background: var(--red);   box-shadow: 0 0 8px var(--red);   animation: blink 1.4s ease-in-out infinite; }
+.dot-amber { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+.sync-label { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+.btn-icon {
+  background: none; border: 1px solid var(--border);
+  border-radius: 8px; padding: 6px 14px;
+  color: var(--muted); font-size: 11px; cursor: pointer;
+  transition: all .2s; font-family: var(--font-ui);
+  letter-spacing: 1px; font-weight: 600;
+}
+.btn-icon:hover { border-color: var(--red); color: var(--red); }
+
+/* ── ALERT BANNER ── */
+.alert-strip {
+  display: none; align-items: center; gap: 10px;
+  padding: 10px 24px; font-size: 12px; font-weight: 700;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, #3f000f, #1a0008);
+  border-bottom: 1px solid var(--red);
+  color: var(--red);
+  animation: stripFade .4s ease;
+}
+.alert-strip.show { display: flex; }
+@keyframes stripFade { from{opacity:0} to{opacity:1} }
+
+/* ── NAV TABS ── */
+.nav {
+  display: flex; gap: 2px; padding: 12px 24px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.nav::-webkit-scrollbar { height: 0; }
+.ntab {
+  padding: 8px 22px; border-radius: 8px;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  color: var(--muted); transition: all .2s;
+  border: 1px solid transparent;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  white-space: nowrap;
+  font-family: var(--font-ui);
+}
+.ntab:hover { color: var(--text); }
+.ntab.active {
+  background: #071a2e; color: var(--cyan);
+  border-color: var(--border);
+  box-shadow: 0 0 14px #00e5ff11;
+}
+
+/* ── CONTENT ── */
+.content { padding: 24px; }
+.section { display: none; }
+.section.active { display: block; }
+
+/* ═══════════════════════════════════════════════
+   CARDS / LAYOUT
+═══════════════════════════════════════════════ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px;
+  position: relative; overflow: hidden;
+}
+.card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.card-title {
+  font-family: var(--font-head);
+  font-size: 11px; font-weight: 700; letter-spacing: 3px;
+  color: var(--cyan); text-transform: uppercase;
+}
+.card-sub { font-size: 11px; color: var(--muted); margin-top: 2px; letter-spacing: 1px; }
+
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+@media(max-width:900px) {
+  .grid-4 { grid-template-columns: repeat(2,1fr); }
+  .grid-3 { grid-template-columns: repeat(2,1fr); }
+}
+@media(max-width:600px) {
+  .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; }
+}
+
+/* ── METRIC CARDS ── */
+.metric {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+  position: relative; overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+}
+.metric:hover { transform: translateY(-3px); box-shadow: 0 10px 28px #00000055; }
+.metric::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.metric.c-cyan::before  { background: linear-gradient(90deg,transparent,var(--cyan),transparent); }
+.metric.c-green::before { background: linear-gradient(90deg,transparent,var(--green),transparent); }
+.metric.c-red::before   { background: linear-gradient(90deg,transparent,var(--red),transparent); }
+.metric.c-amber::before { background: linear-gradient(90deg,transparent,var(--amber),transparent); }
+.metric.c-purple::before{ background: linear-gradient(90deg,transparent,var(--purple),transparent); }
+
+.metric-icon { font-size: 28px; margin-bottom: 10px; display: block; }
+.metric-val {
+  font-family: var(--font-head);
+  font-size: 26px; font-weight: 900;
+  line-height: 1;
+}
+.metric-val.cyan   { color: var(--cyan); }
+.metric-val.green  { color: var(--green); }
+.metric-val.red    { color: var(--red); }
+.metric-val.amber  { color: var(--amber); }
+.metric-val.purple { color: var(--purple); }
+.metric-lbl { font-size: 11px; color: var(--muted); margin-top: 6px; letter-spacing: 2px; text-transform: uppercase; }
+.metric-trend { font-size: 11px; margin-top: 8px; font-family: var(--font-mono); }
+
+/* ── STATUS CHIPS ── */
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.chip-green  { background: #001a0e; border: 1px solid #004d25; color: var(--green); }
+.chip-red    { background: #1a0008; border: 1px solid #4d0015; color: var(--red); }
+.chip-amber  { background: #1a1000; border: 1px solid #4d3000; color: var(--amber); }
+.chip-cyan   { background: #00192a; border: 1px solid #004466; color: var(--cyan); }
+.chip-purple { background: #150a2a; border: 1px solid #401a80; color: var(--purple); }
+.chip-grey   { background: #0a1220; border: 1px solid var(--border); color: var(--muted); }
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD TAB
+═══════════════════════════════════════════════ */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: auto;
+  gap: 16px;
+}
+@media(max-width:1100px) { .dash-grid { grid-template-columns: 1fr 1fr; } }
+@media(max-width:700px)  { .dash-grid { grid-template-columns: 1fr; } }
+
+.span2 { grid-column: span 2; }
+.span3 { grid-column: span 3; }
+@media(max-width:1100px) { .span3 { grid-column: span 2; } }
+
+/* chart wrapper */
+.chart-wrap { position: relative; height: 200px; }
+.chart-wrap-sm { position: relative; height: 140px; }
+
+/* ── DEVICES LIST ── */
+.device-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.device-item:last-child { border-bottom: none; }
+.dev-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--bg-card2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.dev-info { flex: 1; min-width: 0; }
+.dev-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.dev-meta { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dev-score { text-align: right; }
+.score-val { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
+.score-lbl { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+
+/* ── BLOCKCHAIN BLOCKS ── */
+.block-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.block-item:last-child { border-bottom: none; }
+.block-num {
+  font-family: var(--font-head); font-size: 11px; font-weight: 700;
+  color: var(--cyan); background: #00192a; border: 1px solid #004466;
+  border-radius: 6px; padding: 4px 8px; flex-shrink: 0;
+  letter-spacing: 1px;
+}
+.block-info { flex: 1; }
+.block-hash { font-family: var(--font-mono); font-size: 11px; color: var(--cyan); }
+.block-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.block-status { flex-shrink: 0; }
+
+/* ── ANOMALY FEED ── */
+.feed-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px; border-radius: 8px; margin-bottom: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg-card2);
+  animation: feedIn .4s ease;
+}
+@keyframes feedIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:none} }
+.feed-icon { font-size: 18px; flex-shrink: 0; }
+.feed-body { flex: 1; }
+.feed-title { font-size: 12px; font-weight: 700; color: var(--text); }
+.feed-time  { font-size: 10px; color: var(--muted); margin-top: 2px; font-family: var(--font-mono); }
+.feed-score { font-family: var(--font-head); font-size: 13px; font-weight: 700; color: var(--red); }
+
+/* ═══════════════════════════════════════════════
+   UPLOAD TAB
+═══════════════════════════════════════════════ */
+.upload-zone {
+  border: 2px dashed var(--border);
+  border-radius: 14px; padding: 48px 24px;
+  text-align: center; cursor: pointer;
+  transition: all .3s; background: var(--bg-card2);
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--cyan); background: #00192a;
+  box-shadow: 0 0 30px #00e5ff11;
+}
+.upload-icon { font-size: 48px; margin-bottom: 14px; }
+.upload-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.upload-sub { font-size: 12px; color: var(--muted); letter-spacing: 1px; }
+.upload-input { display: none; }
+
+.progress-bar-bg {
+  background: var(--bg-card2); border: 1px solid var(--border);
+  border-radius: 20px; height: 8px; overflow: hidden; margin: 8px 0;
+}
+.progress-bar-fill {
+  height: 100%; border-radius: 20px;
+  background: linear-gradient(90deg, var(--cyan), var(--green));
+  transition: width .4s ease;
+}
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead th {
+  text-align: left; padding: 10px 14px;
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  color: var(--muted); text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+}
+tbody td {
+  padding: 10px 14px; border-bottom: 1px solid #0a1e30;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text);
+}
+tbody tr:hover { background: var(--bg-card2); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ── FORM ELEMENTS ── */
+.form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.form-group { flex: 1; min-width: 180px; }
+.form-group label {
+  display: block; font-size: 10px; font-weight: 700;
+  letter-spacing: 2px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase;
+}
+.form-group input, .form-group select {
+  width: 100%; background: #020c18; border: 1px solid var(--border);
+  border-radius: var(--r); padding: 11px 14px;
+  color: var(--text); font-family: var(--font-ui); font-size: 14px;
+  outline: none; transition: border .2s, box-shadow .2s;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--cyan); box-shadow: 0 0 0 3px var(--cyan-dim);
+}
+.form-group select { appearance: none; cursor: pointer; }
+option { background: #071525; }
+
+.btn {
+  padding: 11px 24px; border-radius: var(--r);
+  font-family: var(--font-ui); font-size: 12px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  cursor: pointer; transition: all .2s; border: none;
+}
+.btn-cyan   { background: linear-gradient(135deg,#006688,#009bb5); color: #fff; box-shadow: 0 4px 16px #00e5ff22; }
+.btn-cyan:hover { background: linear-gradient(135deg,#007799,#00bbcc); transform: translateY(-2px); box-shadow: 0 8px 24px #00e5ff44; }
+.btn-green  { background: linear-gradient(135deg,#006633,#009955); color: #fff; box-shadow: 0 4px 16px #00ff8822; }
+.btn-green:hover { transform: translateY(-2px); box-shadow: 0 8px 24px #00ff8844; }
+.btn-red    { background: linear-gradient(135deg,#660022,#990033); color: #fff; }
+.btn-red:hover { transform: translateY(-2px); }
+.btn-outline {
+  background: none; border: 1px solid var(--border);
+  color: var(--muted);
+}
+.btn-outline:hover { border-color: var(--cyan); color: var(--cyan); }
+
+/* ═══════════════════════════════════════════════
+   LIVE MONITORING TAB
+═══════════════════════════════════════════════ */
+.monitor-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+@media(max-width:900px) { .monitor-grid { grid-template-columns: 1fr; } }
+
+.device-grid-full {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.device-card {
+  background: var(--bg-card2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px;
+  transition: all .3s; cursor: pointer;
+  position: relative; overflow: hidden;
+}
+.device-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--border); transition: background .3s;
+}
+.device-card.anomaly { border-color: var(--red); }
+.device-card.anomaly::before { background: var(--red); box-shadow: 0 2px 10px var(--red); }
+.device-card.normal::before { background: var(--green); }
+.device-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px #00000055; }
+
+.dc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.dc-icon { font-size: 24px; }
+.dc-name { font-size: 13px; font-weight: 700; }
+.dc-id   { font-size: 10px; color: var(--muted); font-family: var(--font-mono); }
+
+.dc-vitals { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dc-vital-item { text-align: center; }
+.dc-vital-val { font-family: var(--font-head); font-size: 15px; font-weight: 700; }
+.dc-vital-lbl { font-size: 9px; color: var(--muted); letter-spacing: 1px; }
+
+/* ── PULSE RING ── */
+.pulse-ring {
+  display: inline-block; position: relative;
+  width: 10px; height: 10px;
+}
+.pulse-ring::before {
+  content: '';
+  position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px solid var(--green);
+  animation: ringPulse 1.5s ease-in-out infinite;
+  opacity: 0;
+}
+@keyframes ringPulse {
+  0%   { opacity:.8; transform: scale(.5); }
+  100% { opacity:0;  transform: scale(1.8); }
+}
+
+/* ═══════════════════════════════════════════════
+   BLOCKCHAIN LOGS TAB
+═══════════════════════════════════════════════ */
+.chain-visual {
+  display: flex; align-items: center; gap: 0;
+  overflow-x: auto; padding: 10px 0 20px;
+}
+.chain-visual::-webkit-scrollbar { height: 4px; }
+.chain-visual::-webkit-scrollbar-thumb { background: var(--border); }
+
+.chain-block {
+  flex-shrink: 0;
+  background: var(--bg-card2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 18px;
+  width: 180px; text-align: center;
+  position: relative; transition: all .3s;
+  cursor: pointer;
+}
+.chain-block:hover { border-color: var(--cyan); box-shadow: 0 0 20px #00e5ff22; transform: translateY(-3px); }
+.chain-block.anomaly-block { border-color: var(--red); }
+.chain-block.anomaly-block:hover { box-shadow: 0 0 20px #ff336622; }
+.chain-block-num { font-family: var(--font-head); font-size: 10px; color: var(--muted); letter-spacing: 2px; }
+.chain-block-hash { font-family: var(--font-mono); font-size: 10px; color: var(--cyan); margin: 6px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chain-block-ts { font-size: 9px; color: var(--muted); }
+.chain-block-type { margin-top: 8px; }
+
+.chain-arrow {
+  font-size: 18px; color: var(--muted); padding: 0 4px; flex-shrink: 0;
+}
+
+.logs-filter { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 5px 14px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; letter-spacing: 2px;
+  cursor: pointer; transition: all .2s; border: 1px solid var(--border);
+  background: none; color: var(--muted); text-transform: uppercase;
+  font-family: var(--font-ui);
+}
+.filter-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.filter-btn.active { background: var(--cyan); color: #000; border-color: var(--cyan); }
+
+/* ═══════════════════════════════════════════════
+   ML MODEL TAB
+═══════════════════════════════════════════════ */
+.model-card {
+  background: var(--bg-card2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 20px;
+  position: relative; overflow: hidden;
+}
+.model-card::before {
+  content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px;
+  background: var(--cyan);
+}
+.model-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.model-type { font-size: 11px; color: var(--muted); letter-spacing: 1px; margin-bottom: 16px; }
+.acc-bar-bg { background: #020c18; border-radius: 20px; height: 6px; overflow: hidden; margin: 4px 0 6px; }
+.acc-bar-fill { height: 100%; border-radius: 20px; transition: width 1.5s cubic-bezier(.4,0,.2,1); }
+.acc-cyan   .acc-bar-fill { background: linear-gradient(90deg,#006688,var(--cyan)); }
+.acc-green  .acc-bar-fill { background: linear-gradient(90deg,#006633,var(--green)); }
+.acc-amber  .acc-bar-fill { background: linear-gradient(90deg,#664400,var(--amber)); }
+.acc-purple .acc-bar-fill { background: linear-gradient(90deg,#4a1080,var(--purple)); }
+.acc-val { font-family: var(--font-head); font-size: 22px; font-weight: 900; }
+
+.confusion-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 12px 0;
+}
+.cm-cell {
+  padding: 12px; border-radius: 8px; text-align: center;
+}
+.cm-cell .cm-val { font-family: var(--font-head); font-size: 20px; font-weight: 900; }
+.cm-cell .cm-lbl { font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-top: 3px; }
+.cm-tp { background: #00330f; border: 1px solid #006622; }
+.cm-tn { background: #001a3a; border: 1px solid #003370; }
+.cm-fp { background: #1a0d00; border: 1px solid #4d2a00; }
+.cm-fn { background: #1a0008; border: 1px solid #4d0015; }
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+#toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 24px;
+  font-size: 12px; font-weight: 700; letter-spacing: 1px;
+  color: var(--text); z-index: 500;
+  transition: transform .35s cubic-bezier(.16,1,.3,1), opacity .35s;
+  opacity: 0; box-shadow: 0 8px 30px #000000aa;
+  white-space: nowrap;
+}
+#toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* ═══════════════════════════════════════════════
+   MISC HELPERS
+═══════════════════════════════════════════════ */
+.flex-row { display: flex; align-items: center; gap: 10px; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.mt8  { margin-top: 8px; }
+.mt12 { margin-top: 12px; }
+.mt16 { margin-top: 16px; }
+.mb16 { margin-bottom: 16px; }
+.gap8 { gap: 8px; }
+.w100 { width: 100%; }
+.text-mono { font-family: var(--font-mono); font-size: 11px; }
+.text-muted { color: var(--muted); font-size: 11px; }
+.section-title {
+  font-family: var(--font-head);
+  font-size: 13px; letter-spacing: 3px; color: var(--cyan);
+  text-transform: uppercase; margin-bottom: 16px;
+  border-bottom: 1px solid var(--border); padding-bottom: 10px;
+}
+.divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.code-block {
+  background: #010810; border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; font-family: var(--font-mono);
+  font-size: 11px; color: var(--cyan); line-height: 1.7;
+  overflow-x: auto;
+}
+.kv-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #0a1e30; }
+.kv-row:last-child { border-bottom: none; }
+.kv-key { color: var(--muted); font-size: 11px; letter-spacing: 1px; }
+.kv-val { font-family: var(--font-mono); font-size: 11px; color: var(--text); }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="loginScreen">
+  <div class="login-container">
+    <div class="login-logo">
+      <div class="login-icon">🛡️</div>
+      <h1>IoHT-SHIELD</h1>
+      <p class="subtitle">Blockchain Anomaly Detection Framework</p>
+    </div>
+    <div class="login-card">
+      <div class="field">
+        <label>Admin ID</label>
+        <div class="field-wrap">
+          <span class="icon">👤</span>
+          <input type="text" id="inputUser" placeholder="admin" autocomplete="off"/>
+        </div>
+      </div>
+      <div class="field">
+        <label>Access Key</label>
+        <div class="field-wrap">
+          <span class="icon">🔐</span>
+          <input type="password" id="inputKey" placeholder="••••••••"/>
+        </div>
+      </div>
+      <button class="btn-primary" id="btnLogin">AUTHENTICATE</button>
+      <div class="login-error" id="loginErr"></div>
+      <p class="hint">Use &nbsp;<span>admin</span>&nbsp; / &nbsp;<span>iothshield</span>&nbsp; to demo</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD ═══ -->
+<div id="dashboard">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-logo">IoHT<span>—</span>SHIELD</div>
+      <div class="tb-subtitle">Blockchain Anomaly Detection v2.4.1</div>
+    </div>
+    <div class="tb-right">
+      <div class="live-badge"><div class="dot dot-green"></div> LIVE</div>
+      <span class="sync-label" id="syncTime">Sync: --:--:--</span>
+      <button class="btn-icon" id="btnLogout">⏻ LOGOUT</button>
+    </div>
+  </div>
+
+  <!-- ALERT STRIP -->
+  <div class="alert-strip" id="alertStrip">
+    <span>⚠</span>
+    <span id="alertText">Anomaly detected on Device ECG-MONITOR-04 — Score: 0.97 — Logged to blockchain</span>
+  </div>
+
+  <!-- NAV -->
+  <div class="nav">
+    <button class="ntab active" data-tab="dashboard">📊 Dashboard</button>
+    <button class="ntab" data-tab="upload">📤 Upload Data</button>
+    <button class="ntab" data-tab="monitor">📡 Live Monitor</button>
+    <button class="ntab" data-tab="blockchain">⛓️ Blockchain Logs</button>
+    <button class="ntab" data-tab="models">🧠 ML Models</button>
+  </div>
+
+  <div class="content">
+
+    <!-- ══════════════════════════════════════
+         DASHBOARD TAB
+    ══════════════════════════════════════ -->
+    <div class="section active" id="tab-dashboard">
+
+      <!-- Metrics Row -->
+      <div class="grid-4 mb16">
+        <div class="metric c-cyan">
+          <span class="metric-icon">📡</span>
+          <div class="metric-val cyan" id="mDevices">12</div>
+          <div class="metric-lbl">Active Devices</div>
+          <div class="metric-trend" style="color:var(--green)">↑ 2 online this hour</div>
+        </div>
+        <div class="metric c-red">
+          <span class="metric-icon">🚨</span>
+          <div class="metric-val red" id="mAnomalies">7</div>
+          <div class="metric-lbl">Anomalies Today</div>
+          <div class="metric-trend" style="color:var(--red)">↑ +3 in last 10 min</div>
+        </div>
+        <div class="metric c-green">
+          <span class="metric-icon">⛓️</span>
+          <div class="metric-val green" id="mBlocks">147</div>
+          <div class="metric-lbl">Blockchain Entries</div>
+          <div class="metric-trend" style="color:var(--cyan)">Last block: 12s ago</div>
+        </div>
+        <div class="metric c-amber">
+          <span class="metric-icon">🎯</span>
+          <div class="metric-val amber">97.4%</div>
+          <div class="metric-lbl">Model Accuracy</div>
+          <div class="metric-trend" style="color:var(--green)">↑ LSTM Autoencoder</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+
+        <!-- Traffic Chart -->
+        <div class="card span2">
+          <div class="card-head">
+            <div>
+              <div class="card-title">Network Traffic &amp; Anomaly Detection</div>
+              <div class="card-sub">Packets/sec · Rolling 30-point window</div>
+            </div>
+            <div class="flex-row">
+              <span class="chip chip-green"><div class="dot dot-green" style="width:6px;height:6px"></div> Normal</span>
+              <span class="chip chip-red">⚠ Anomaly</span>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="trafficChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Anomaly Feed -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">🔴 Live Anomaly Feed</div>
+            <span class="chip chip-red" id="feedCount">7 Today</span>
+          </div>
+          <div id="anomalyFeed" style="max-height:240px;overflow-y:auto;"></div>
+        </div>
+
+        <!-- Devices -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">IoHT Devices</div>
+            <span class="chip chip-cyan" id="devOnline">10/12 Online</span>
+          </div>
+          <div id="deviceList"></div>
+        </div>
+
+        <!-- Score Distribution -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Anomaly Score Distribution</div>
+            <div class="card-sub">Isolation Forest output</div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="scoreChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Recent Blockchain -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">⛓️ Recent Blocks</div>
+            <button class="btn btn-outline" style="padding:5px 14px;font-size:10px" onclick="switchTab('blockchain')">VIEW ALL →</button>
+          </div>
+          <div id="recentBlocks"></div>
+        </div>
+
+        <!-- Model Stats -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">Model Performance</div>
+          </div>
+          <div id="modelMiniCards"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         UPLOAD TAB
+    ══════════════════════════════════════ -->
+    <div class="section" id="tab-upload">
+      <div class="grid-2">
+        <div>
+          <!-- Upload Zone -->
+          <div class="card mb16">
+            <div class="card-title mb16">📤 Upload IoHT Dataset</div>
+            <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+              <input type="file" id="fileInput" class="upload-input" accept=".csv,.json"/>
+              <div class="upload-icon">📁</div>
+              <div class="upload-title">Drop CSV / JSON file here</div>
+              <div class="upload-sub">or click to browse · Max 50MB</div>
+            </div>
+            <div id="uploadProgress" style="display:none;margin-top:16px;">
+              <div class="flex-between mb8">
+                <span style="font-size:12px;font-weight:700" id="uploadFileName">file.csv</span>
+                <span style="font-size:12px;color:var(--cyan)" id="uploadPct">0%</span>
+              </div>
+              <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+              <div style="font-size:11px;color:var(--muted);margin-top:6px" id="uploadStatus">Processing...</div>
+            </div>
+          </div>
+
+          <!-- Manual Input -->
+          <div class="card">
+            <div class="card-title mb16">⚡ Quick Anomaly Predict</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Device ID</label>
+                <input type="text" id="pDeviceId" value="ECG-MONITOR-01"/>
+              </div>
+              <div class="form-group">
+                <label>Heart Rate (bpm)</label>
+                <input type="number" id="pHR" value="142" min="0" max="300"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>SpO₂ (%)</label>
+                <input type="number" id="pSpO2" value="88" min="50" max="100"/>
+              </div>
+              <div class="form-group">
+                <label>Temperature (°C)</label>
+                <input type="number" id="pTemp" value="38.9" step="0.1"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Blood Pressure Systolic</label>
+                <input type="number" id="pBP" value="175"/>
+              </div>
+              <div class="form-group">
+                <label>ML Model</label>
+                <select id="pModel">
+                  <option value="isolation_forest">Isolation Forest</option>
+                  <option value="lstm_autoencoder">LSTM Autoencoder</option>
+                  <option value="ensemble">Ensemble (Both)</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex-row mt8">
+              <button class="btn btn-cyan" onclick="runPredict()">🔍 PREDICT ANOMALY</button>
+              <button class="btn btn-outline" onclick="clearResult()">CLEAR</button>
+            </div>
+            <div id="predictResult" style="margin-top:16px;display:none;"></div>
+          </div>
+        </div>
+
+        <div>
+          <!-- Train Model -->
+          <div class="card mb16">
+            <div class="card-title mb16">🧠 Train ML Model</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Algorithm</label>
+                <select id="trainAlgo">
+                  <option value="isolation_forest">Isolation Forest</option>
+                  <option value="lstm_autoencoder">LSTM Autoencoder</option>
+                  <option value="both">Train Both</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Contamination Rate</label>
+                <input type="number" id="trainContam" value="0.05" step="0.01" min="0.01" max="0.5"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Epochs (LSTM)</label>
+                <input type="number" id="trainEpochs" value="50" min="10" max="500"/>
+              </div>
+              <div class="form-group">
+                <label>Test Split</label>
+                <input type="number" id="trainSplit" value="0.2" step="0.05" min="0.1" max="0.4"/>
+              </div>
+            </div>
+            <button class="btn btn-green w100" onclick="trainModel()">⚙️ START TRAINING</button>
+            <div id="trainStatus" style="margin-top:14px;"></div>
+          </div>
+
+          <!-- Data Preview -->
+          <div class="card">
+            <div class="card-title mb16">📋 Data Preview</div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>Device</th><th>HR</th><th>SpO₂</th><th>Temp</th><th>BP</th><th>Label</th>
+                </tr></thead>
+                <tbody id="dataPreview">
+                  <tr><td>ECG-01</td><td>72</td><td>98</td><td>36.5</td><td>120</td><td><span class="chip chip-green">NORMAL</span></td></tr>
+                  <tr><td>ECG-02</td><td>138</td><td>89</td><td>38.7</td><td>168</td><td><span class="chip chip-red">ANOMALY</span></td></tr>
+                  <tr><td>SPO2-01</td><td>65</td><td>99</td><td>36.8</td><td>115</td><td><span class="chip chip-green">NORMAL</span></td></tr>
+                  <tr><td>BP-MON-03</td><td>88</td><td>95</td><td>37.1</td><td>182</td><td><span class="chip chip-red">ANOMALY</span></td></tr>
+                  <tr><td>TEMP-02</td><td>74</td><td>97</td><td>39.4</td><td>122</td><td><span class="chip chip-amber">ANOMALY</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         LIVE MONITOR TAB
+    ══════════════════════════════════════ -->
+    <div class="section" id="tab-monitor">
+      <div class="flex-between mb16">
+        <div>
+          <h2 style="font-family:var(--font-head);font-size:14px;letter-spacing:3px;color:var(--cyan)">LIVE IoHT MONITORING</h2>
+          <p class="text-muted" style="margin-top:4px">Real-time anomaly detection · Auto-blockchain logging</p>
+        </div>
+        <div class="flex-row">
+          <button class="btn btn-green" id="btnStartMon" onclick="toggleMonitor()">▶ START MONITORING</button>
+          <button class="btn btn-outline" onclick="resetAll()">↺ RESET</button>
+        </div>
+      </div>
+
+      <div class="monitor-grid">
+        <div>
+          <!-- LSTM Chart -->
+          <div class="card mb16">
+            <div class="card-head">
+              <div>
+                <div class="card-title">LSTM Reconstruction Error</div>
+                <div class="card-sub">Threshold: 0.08 · Anomaly → Auto-logged to blockchain</div>
+              </div>
+              <span class="chip chip-red" id="lstmAnomalyCount">0 Detected</span>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="lstmChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Device Grid -->
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">Device Status Grid</div>
+              <span id="monStatusLabel" class="chip chip-grey">IDLE</span>
+            </div>
+            <div class="device-grid-full" id="monitorDeviceGrid"></div>
+          </div>
+        </div>
+
+        <!-- Side Panel -->
+        <div>
+          <div class="card mb16">
+            <div class="card-title mb16">📊 Current Vitals Stream</div>
+            <div class="chart-wrap-sm"><canvas id="vitalsChart"></canvas></div>
+          </div>
+          <div class="card mb16">
+            <div class="card-title mb16">🔔 Alerts Queue</div>
+            <div id="alertQueue" style="max-height:280px;overflow-y:auto;">
+              <p class="text-muted" style="text-align:center;padding:20px;">No active alerts</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title mb16">⚙️ Monitor Config</div>
+            <div class="kv-row">
+              <span class="kv-key">Scan interval</span>
+              <span class="kv-val" style="color:var(--cyan)">2 seconds</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-key">IF Threshold</span>
+              <span class="kv-val">-0.15</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-key">LSTM Threshold</span>
+              <span class="kv-val">0.08</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-key">Auto-blockchain</span>
+              <span class="kv-val" style="color:var(--green)">ENABLED</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-key">Chain network</span>
+              <span class="kv-val">Ganache Local</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         BLOCKCHAIN TAB
+    ══════════════════════════════════════ -->
+    <div class="section" id="tab-blockchain">
+      <div class="flex-between mb16">
+        <div>
+          <h2 style="font-family:var(--font-head);font-size:14px;letter-spacing:3px;color:var(--cyan)">⛓️ BLOCKCHAIN LEDGER</h2>
+          <p class="text-muted" style="margin-top:4px">Ethereum · Ganache · AnomalyLog.sol Contract</p>
+        </div>
+        <div class="flex-row">
+          <button class="btn btn-outline" onclick="copyHash()">📋 COPY LATEST HASH</button>
+          <button class="btn btn-cyan" onclick="verifyChain()">✅ VERIFY CHAIN</button>
+        </div>
+      </div>
+
+      <!-- Stats Row -->
+      <div class="grid-4 mb16">
+        <div class="metric c-cyan">
+          <span class="metric-icon">📦</span>
+          <div class="metric-val cyan" id="bcTotalBlocks">147</div>
+          <div class="metric-lbl">Total Blocks</div>
+        </div>
+        <div class="metric c-red">
+          <span class="metric-icon">⚠️</span>
+          <div class="metric-val red" id="bcAnomalyBlocks">31</div>
+          <div class="metric-lbl">Anomaly Blocks</div>
+        </div>
+        <div class="metric c-green">
+          <span class="metric-icon">✅</span>
+          <div class="metric-val green" id="bcNormalBlocks">116</div>
+          <div class="metric-lbl">Normal Blocks</div>
+        </div>
+        <div class="metric c-amber">
+          <span class="metric-icon">⛽</span>
+          <div class="metric-val amber">~21K</div>
+          <div class="metric-lbl">Gas Used (avg)</div>
+        </div>
+      </div>
+
+      <!-- Chain Visualizer -->
+      <div class="card mb16">
+        <div class="card-title mb16">Chain Visualization (Latest 8 Blocks)</div>
+        <div class="chain-visual" id="chainVisual"></div>
+      </div>
+
+      <!-- Filter + Table -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">Transaction Log</div>
+          <input type="text" placeholder="Search hash / device..." id="chainSearch"
+            style="background:#020c18;border:1px solid var(--border);border-radius:8px;padding:7px 14px;color:var(--text);font-family:var(--font-mono);font-size:11px;outline:none;width:220px"
+            oninput="filterChain()"/>
+        </div>
+        <div class="logs-filter">
+          <button class="filter-btn active" onclick="setFilter(this,'all')">ALL</button>
+          <button class="filter-btn" onclick="setFilter(this,'anomaly')">ANOMALY</button>
+          <button class="filter-btn" onclick="setFilter(this,'normal')">NORMAL</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th>Block#</th><th>Tx Hash</th><th>Device ID</th><th>Timestamp</th>
+              <th>Anomaly Score</th><th>IF Result</th><th>LSTM Error</th><th>Status</th>
+            </tr></thead>
+            <tbody id="chainTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         ML MODELS TAB
+    ══════════════════════════════════════ -->
+    <div class="section" id="tab-models">
+      <div class="grid-2 mb16">
+        <!-- Isolation Forest -->
+        <div class="model-card acc-cyan">
+          <div class="model-name">🌲 Isolation Forest</div>
+          <div class="model-type">UNSUPERVISED ANOMALY DETECTION</div>
+          <div class="flex-between">
+            <div class="kv-key">Accuracy</div>
+            <div class="acc-val" style="color:var(--cyan)">96.2%</div>
+          </div>
+          <div class="acc-bar-bg"><div class="acc-bar-fill" style="width:96.2%"></div></div>
+          <div class="flex-between mt8">
+            <div class="kv-key">F1-Score</div>
+            <div class="kv-val">0.944</div>
+          </div>
+          <div class="flex-between">
+            <div class="kv-key">Precision</div>
+            <div class="kv-val">0.962</div>
+          </div>
+          <div class="flex-between">
+            <div class="kv-key">Recall</div>
+            <div class="kv-val">0.927</div>
+          </div>
+          <div class="flex-between">
+            <div class="kv-key">Contamination</div>
+            <div class="kv-val" style="color:var(--cyan)">0.05</div>
+          </div>
+          <div class="flex-between">
+            <div class="kv-key">n_estimators</div>
+            <div class="kv-val">200</div>
+          </div>
+          <hr class="divider"/>
+          <div class="card-title" style="margin-bottom:10px;font-size:10px">CONFUSION MATRIX</div>
+          <div class="confusion-grid">
+            <div class="cm-cell cm-tp"><div class="cm-val" style="color:var(--green)">842</div><div class="cm-lbl">True Pos</div></div>
+            <div class="cm-cell cm-tn"><div class="cm-val" style="color:var(--cyan)">7203</div><div class="cm-lbl">True Neg</div></div>
+            <div class="cm-cell cm-fp"><div class="cm-val" style="color:var(--amber)">32</div><div class="cm-lbl">False Pos</div></div>
+            <div class="cm-cell cm-fn"><div class="cm-val" style="color:var(--red)">67</div><div class="cm-lbl">False Neg</div></div>
+          </div>
+        </div>
+
+        <!-- LSTM -->
+        <div class="model-card acc-green">
+          <div class="model-name">🔁 LSTM Autoencoder</div>
+          <div class="model-type">DEEP LEARNING · TIME-SERIES ANOMALY</div>
+          <div class="flex-between">
+            <div class="kv-key">Accuracy</div>
+            <div class="acc-val" style="color:var(--green)">97.8%</div>
+          </div>
+          <div class="acc-bar-bg"><div class="acc-bar-fill" style="width:97.8%"></div></div>
+          <div class="flex-between mt8">
+            <div class="kv-key">F1-Score</div>
+            <div class="kv-val">0.961</div>
+          </div>
+          <div class="flex-between">
+            <div class="kv-key">Precision</div>
+            <div class="kv-val">0.978</div>
+          </div>
+          <div class="flex-between">
+            <div class="kv-key">Recall</div>
+            <div class="kv-val">0.945</div>
+          </div>
+          <div class="flex-between">
+            <div class="kv-key">Threshold</div>
+            <div class="kv-val" style="color:var(--green)">0.082</div>
+          </div>
+          <hr class="divider"/>
+          <div class="card-title" style="margin-bottom:10px;font-size:10px">CONFUSION MATRIX</div>
+          <div class="confusion-grid">
+            <div class="cm-cell cm-tp"><div class="cm-val" style="color:var(--green)">874</div><div class="cm-lbl">True Pos</div></div>
+            <div class="cm-cell cm-tn"><div class="cm-val" style="color:var(--cyan)">7219</div><div class="cm-lbl">True Neg</div></div>
+            <div class="cm-cell cm-fp"><div class="cm-val" style="color:var(--amber)">16</div><div class="cm-lbl">False Pos</div></div>
+            <div class="cm-cell cm-fn"><div class="cm-val" style="color:var(--red)">35</div><div class="cm-lbl">False Neg</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROC / Comparison Charts -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title mb16">ROC Curve Comparison</div>
+          <div class="chart-wrap"><canvas id="rocChart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title mb16">Training Loss (LSTM Autoencoder)</div>
+          <div class="chart-wrap"><canvas id="lossChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Code Snippets -->
+      <div class="card mt16">
+        <div class="card-title mb16">Backend API Endpoints</div>
+        <div class="code-block">
+<span style="color:var(--muted)"># FastAPI Backend — main.py</span>
+
+<span style="color:var(--green)">POST</span> /api/upload-data    <span style="color:var(--muted)"># Upload CSV/JSON IoHT dataset</span>
+<span style="color:var(--green)">POST</span> /api/predict         <span style="color:var(--muted)"># Run anomaly detection on payload</span>
+<span style="color:var(--green)">POST</span> /api/train           <span style="color:var(--muted)"># Train/retrain ML models</span>
+<span style="color:var(--cyan)">GET</span>  /api/logs            <span style="color:var(--muted)"># Fetch blockchain logs</span>
+<span style="color:var(--cyan)">GET</span>  /api/devices         <span style="color:var(--muted)"># List active IoHT devices</span>
+<span style="color:var(--cyan)">GET</span>  /api/model-stats     <span style="color:var(--muted)"># Model accuracy metrics</span>
+<span style="color:var(--green)">POST</span> /api/stream/start    <span style="color:var(--muted)"># Start live streaming simulation</span>
+<span style="color:var(--red)">DELETE</span> /api/stream/stop  <span style="color:var(--muted)"># Stop streaming</span>
+
+<span style="color:var(--muted)"># Smart Contract — AnomalyLog.sol</span>
+<span style="color:var(--purple)">function</span> logEntry(deviceId, timestamp, anomalyScore, ifScore, lstmError, status) <span style="color:var(--muted)">→ txHash</span>
+<span style="color:var(--purple)">function</span> getEntry(index) <span style="color:var(--muted)">→ AnomalyEntry struct</span>
+<span style="color:var(--purple)">function</span> getTotalEntries() <span style="color:var(--muted)">→ uint256</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .content -->
+</div><!-- #dashboard -->
+
+<div id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════ */
+const DEVICES = [
+  { id:'ECG-MON-01', name:'ECG Monitor 1',     icon:'💓', ip:'192.168.1.101', fw:'2.4.1', battery:87, status:'normal',  hr:72,  spo2:98, temp:36.5, bp:120, score:0.02 },
+  { id:'SPO2-01',    name:'SpO₂ Sensor A',     icon:'🫁', ip:'192.168.1.102', fw:'1.9.3', battery:63, status:'anomaly', hr:138, spo2:89, temp:38.7, bp:168, score:0.91 },
+  { id:'BP-MON-03',  name:'BP Monitor 3',      icon:'🩸', ip:'192.168.1.103', fw:'3.1.0', battery:91, status:'normal',  hr:65,  spo2:99, temp:36.8, bp:115, score:0.04 },
+  { id:'TEMP-02',    name:'Thermometer 2',     icon:'🌡️', ip:'192.168.1.104', fw:'2.0.1', battery:45, status:'anomaly', hr:88,  spo2:95, temp:39.4, bp:182, score:0.87 },
+  { id:'GLUCM-01',   name:'Glucose Monitor',   icon:'💉', ip:'192.168.1.105', fw:'1.2.4', battery:78, status:'normal',  hr:74,  spo2:97, temp:37.0, bp:118, score:0.07 },
+  { id:'ECG-MON-04', name:'ECG Monitor 4',     icon:'💓', ip:'192.168.1.106', fw:'2.4.1', battery:33, status:'anomaly', hr:145, spo2:87, temp:39.1, bp:190, score:0.97 },
+  { id:'PULSE-02',   name:'Pulse Oximeter 2',  icon:'👆', ip:'192.168.1.107', fw:'1.5.2', battery:92, status:'normal',  hr:68,  spo2:99, temp:36.6, bp:122, score:0.03 },
+  { id:'INFPM-01',   name:'Infusion Pump',     icon:'💊', ip:'192.168.1.108', fw:'4.0.0', battery:100,status:'normal',  hr:0,   spo2:0,  temp:0,   bp:0,   score:0.01 },
+];
+
+const BLOCKCHAIN_ENTRIES = [
+  { block:147, hash:'0x8f3a1b2c4d5e6f7890ab', device:'ECG-MON-04', ts:'2025-03-29 14:32:11', ifScore:-0.89, lstmError:0.214, status:'ANOMALY', gasUsed:21450 },
+  { block:146, hash:'0x7e2b3c4d5e6a7b890123', device:'SPO2-01',    ts:'2025-03-29 14:29:47', ifScore:-0.72, lstmError:0.187, status:'ANOMALY', gasUsed:21220 },
+  { block:145, hash:'0x6d1c2b3a4f5e6d789012', device:'BP-MON-03',  ts:'2025-03-29 14:27:33', ifScore: 0.14, lstmError:0.023, status:'NORMAL',  gasUsed:21000 },
+  { block:144, hash:'0x5c0b1a2938475e65f012', device:'TEMP-02',    ts:'2025-03-29 14:24:15', ifScore:-0.81, lstmError:0.192, status:'ANOMALY', gasUsed:21380 },
+  { block:143, hash:'0x4b9a089374651e54ef01', device:'ECG-MON-01', ts:'2025-03-29 14:21:08', ifScore: 0.22, lstmError:0.018, status:'NORMAL',  gasUsed:21010 },
+  { block:142, hash:'0x3a8907826354de43e0f0', device:'GLUCM-01',   ts:'2025-03-29 14:18:55', ifScore: 0.18, lstmError:0.031, status:'NORMAL',  gasUsed:21020 },
+  { block:141, hash:'0x297806725243cd32d0ef', device:'ECG-MON-04', ts:'2025-03-29 14:15:40', ifScore:-0.95, lstmError:0.231, status:'ANOMALY', gasUsed:21500 },
+  { block:140, hash:'0x18670561412bc21ce0de', device:'PULSE-02',   ts:'2025-03-29 14:12:27', ifScore: 0.09, lstmError:0.015, status:'NORMAL',  gasUsed:20990 },
+];
+
+const ANOMALY_FEED = [
+  { icon:'🚨', title:'ECG-MON-04 — Critical Cardiac Anomaly', score:'0.97', time:'14:32:11', type:'anomaly' },
+  { icon:'⚠️', title:'SPO₂-01 — Low Oxygen Saturation',       score:'0.91', time:'14:29:47', type:'anomaly' },
+  { icon:'⚠️', title:'TEMP-02 — High Fever Spike Detected',    score:'0.87', time:'14:24:15', type:'anomaly' },
+  { icon:'🔶', title:'BP-MON-03 — Elevated Systolic Pressure', score:'0.62', time:'14:18:33', type:'warning' },
+];
+
+let monitorRunning = false;
+let monitorTimer = null;
+let lstmData = Array.from({length:30}, () => Math.random() * 0.04 + 0.01);
+let trafficData = Array.from({length:30}, () => Math.floor(Math.random()*120 + 60));
+let vitalsHR    = Array.from({length:20}, () => Math.floor(Math.random()*15 + 68));
+let lstmAnomalyCount = 0;
+let chainFilter = 'all';
+let charts = {};
+
+/* ═══════════════════════════════════════════
+   AUTH
+═══════════════════════════════════════════ */
+document.getElementById('btnLogin').addEventListener('click', doLogin);
+document.getElementById('inputKey').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('btnLogout').addEventListener('click', () => {
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('inputUser').value = '';
+  document.getElementById('inputKey').value = '';
+});
+
+function doLogin() {
+  const u = document.getElementById('inputUser').value.trim();
+  const k = document.getElementById('inputKey').value.trim();
+  const err = document.getElementById('loginErr');
+  if (!u || !k) { err.textContent = '⚠ Enter Admin ID and Access Key'; return; }
+  if (u === 'admin' && k === 'iothshield') {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    initDashboard();
+  } else {
+    err.textContent = '✕ Invalid credentials — try admin / iothshield';
+    document.getElementById('inputUser').focus();
+  }
+}
+
+/* ═══════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════ */
+document.querySelectorAll('.ntab').forEach(t =>
+  t.addEventListener('click', () => switchTab(t.dataset.tab))
+);
+function switchTab(name) {
+  document.querySelectorAll('.ntab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.id === `tab-${name}`));
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+function initDashboard() {
+  renderDeviceList();
+  renderAnomalyFeed();
+  renderRecentBlocks();
+  renderModelMini();
+  renderChainTable();
+  renderChainVisual();
+  renderMonitorDevices();
+  initCharts();
+  startSyncClock();
+  startLiveTick();
+  setTimeout(() => showAlertStrip(), 1500);
+}
+
+/* ═══════════════════════════════════════════
+   RENDER HELPERS
+═══════════════════════════════════════════ */
+function renderDeviceList() {
+  document.getElementById('deviceList').innerHTML = DEVICES.slice(0,6).map(d => `
+    <div class="device-item">
+      <div class="dev-icon">${d.icon}</div>
+      <div class="dev-info">
+        <div class="dev-name">${d.name}</div>
+        <div class="dev-meta">${d.ip} · FW ${d.fw} · 🔋${d.battery}%</div>
+      </div>
+      <div class="dev-score">
+        <div class="score-val" style="color:${d.status==='anomaly'?'var(--red)':'var(--green)'}">${d.score.toFixed(2)}</div>
+        <div class="score-lbl">SCORE</div>
+      </div>
+      <span class="chip ${d.status==='anomaly'?'chip-red':'chip-green'}">${d.status==='anomaly'?'⚠ ANOM':'✓ OK'}</span>
+    </div>`).join('');
+}
+
+function renderAnomalyFeed() {
+  document.getElementById('anomalyFeed').innerHTML = ANOMALY_FEED.map(a => `
+    <div class="feed-item">
+      <div class="feed-icon">${a.icon}</div>
+      <div class="feed-body">
+        <div class="feed-title">${a.title}</div>
+        <div class="feed-time">${a.time} · Logged to blockchain ✓</div>
+      </div>
+      <div class="feed-score">${a.score}</div>
+    </div>`).join('');
+}
+
+function renderRecentBlocks() {
+  document.getElementById('recentBlocks').innerHTML = BLOCKCHAIN_ENTRIES.slice(0,5).map(b => `
+    <div class="block-item">
+      <div class="block-num">#${b.block}</div>
+      <div class="block-info">
+        <div class="block-hash">${b.hash}</div>
+        <div class="block-meta">${b.device} · ${b.ts}</div>
+      </div>
+      <span class="chip ${b.status==='ANOMALY'?'chip-red':'chip-green'}">${b.status}</span>
+    </div>`).join('');
+}
+
+function renderModelMini() {
+  const models = [
+    { name:'Isolation Forest', acc:96.2, color:'cyan' },
+    { name:'LSTM Autoencoder', acc:97.8, color:'green' },
+    { name:'Ensemble',         acc:98.1, color:'purple' },
+  ];
+  document.getElementById('modelMiniCards').innerHTML = models.map(m => `
+    <div style="margin-bottom:12px;">
+      <div class="flex-between" style="margin-bottom:5px;">
+        <span style="font-size:12px;font-weight:700">${m.name}</span>
+        <span style="font-family:var(--font-head);font-size:14px;font-weight:900;color:var(--${m.color})">${m.acc}%</span>
+      </div>
+      <div class="acc-bar-bg"><div class="acc-bar-fill" style="background:linear-gradient(90deg,transparent,var(--${m.color}));width:${m.acc}%"></div></div>
+    </div>`).join('');
+}
+
+function renderChainTable() {
+  const search = (document.getElementById('chainSearch')||{value:''}).value.toLowerCase();
+  const rows = BLOCKCHAIN_ENTRIES
+    .filter(b => {
+      if (chainFilter !== 'all' && b.status.toLowerCase() !== chainFilter) return false;
+      if (search && !b.hash.includes(search) && !b.device.toLowerCase().includes(search)) return false;
+      return true;
+    })
+    .map(b => `<tr>
+      <td style="color:var(--cyan);font-weight:700">#${b.block}</td>
+      <td style="color:var(--cyan)">${b.hash}</td>
+      <td>${b.device}</td>
+      <td>${b.ts}</td>
+      <td style="color:${b.status==='ANOMALY'?'var(--red)':'var(--green)'}">${b.ifScore.toFixed(3)}</td>
+      <td>${b.ifScore.toFixed(3)}</td>
+      <td>${b.lstmError.toFixed(3)}</td>
+      <td><span class="chip ${b.status==='ANOMALY'?'chip-red':'chip-green'}">${b.status}</span></td>
+    </tr>`).join('');
+  document.getElementById('chainTableBody').innerHTML = rows || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px;">No entries found</td></tr>';
+}
+
+function renderChainVisual() {
+  const items = BLOCKCHAIN_ENTRIES.slice(0,8).reverse();
+  document.getElementById('chainVisual').innerHTML = items.map((b,i) =>
+    `${i>0?'<div class="chain-arrow">→</div>':''}
+    <div class="chain-block ${b.status==='ANOMALY'?'anomaly-block':''}">
+      <div class="chain-block-num">BLOCK #${b.block}</div>
+      <div class="chain-block-hash">${b.hash.slice(0,14)}…</div>
+      <div class="chain-block-ts">${b.ts.split(' ')[1]}</div>
+      <div class="chain-block-type">
+        <span class="chip ${b.status==='ANOMALY'?'chip-red':'chip-green'}" style="font-size:9px">${b.status}</span>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function renderMonitorDevices() {
+  document.getElementById('monitorDeviceGrid').innerHTML = DEVICES.map(d => `
+    <div class="device-card ${d.status}">
+      <div class="dc-header">
+        <div class="dc-icon">${d.icon}</div>
+        <div>
+          <div class="dc-name">${d.name}</div>
+          <div class="dc-id">${d.id}</div>
+        </div>
+        <div style="margin-left:auto">
+          ${d.status==='anomaly'
+            ? '<span class="chip chip-red" style="font-size:9px">⚠ ANOMALY</span>'
+            : '<span class="chip chip-green" style="font-size:9px">✓ NORMAL</span>'}
+        </div>
+      </div>
+      <div class="dc-vitals">
+        <div class="dc-vital-item">
+          <div class="dc-vital-val" style="color:var(--red)">${d.hr||'--'}</div>
+          <div class="dc-vital-lbl">BPM</div>
+        </div>
+        <div class="dc-vital-item">
+          <div class="dc-vital-val" style="color:var(--cyan)">${d.spo2||'--'}%</div>
+          <div class="dc-vital-lbl">SpO₂</div>
+        </div>
+        <div class="dc-vital-item">
+          <div class="dc-vital-val" style="color:var(--amber)">${d.temp||'--'}°</div>
+          <div class="dc-vital-lbl">TEMP</div>
+        </div>
+        <div class="dc-vital-item">
+          <div class="dc-vital-val" style="color:${d.score>0.7?'var(--red)':'var(--green)'}">${d.score.toFixed(2)}</div>
+          <div class="dc-vital-lbl">SCORE</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════
+   CHARTS
+═══════════════════════════════════════════ */
+function initCharts() {
+  // Traffic chart
+  const tCtx = document.getElementById('trafficChart').getContext('2d');
+  charts.traffic = new Chart(tCtx, {
+    type: 'line',
+    data: {
+      labels: trafficData.map((_,i) => i),
+      datasets: [{
+        label: 'Traffic (pkt/s)',
+        data: trafficData,
+        borderColor: '#00e5ff',
+        backgroundColor: 'rgba(0,229,255,0.06)',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        fill: true,
+        tension: 0.4
+      }, {
+        label: 'Anomaly Threshold',
+        data: Array(30).fill(180),
+        borderColor: 'rgba(255,51,102,0.5)',
+        borderDash: [4,4],
+        borderWidth: 1,
+        pointRadius: 0,
+        fill: false
+      }]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#4a6a88', font:{size:10} } } },
+      scales:{
+        x:{ display:false },
+        y:{ grid:{ color:'#112840' }, ticks:{ color:'#4a6a88', font:{size:10} } }
+      }
+    }
+  });
+
+  // Score distribution
+  const sCtx = document.getElementById('scoreChart').getContext('2d');
+  charts.score = new Chart(sCtx, {
+    type: 'bar',
+    data: {
+      labels: ['0.0','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','1.0'],
+      datasets: [{
+        label: 'Count',
+        data: [820,612,490,345,280,190,120,88,65,42,31],
+        backgroundColor: ctx => {
+          const v = ctx.dataIndex;
+          return v >= 6 ? 'rgba(255,51,102,0.7)' : 'rgba(0,229,255,0.5)';
+        },
+        borderRadius: 4,
+      }]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ grid:{ display:false }, ticks:{ color:'#4a6a88', font:{size:9} } },
+        y:{ grid:{ color:'#112840' }, ticks:{ color:'#4a6a88', font:{size:9} } }
+      }
+    }
+  });
+
+  // LSTM reconstruction error
+  const lCtx = document.getElementById('lstmChart').getContext('2d');
+  charts.lstm = new Chart(lCtx, {
+    type: 'line',
+    data: {
+      labels: lstmData.map((_,i) => i),
+      datasets: [{
+        label: 'Reconstruction Error',
+        data: lstmData,
+        borderColor: ctx => ctx.dataIndex >= 0 ? '#00e5ff' : '#ff3366',
+        borderWidth: 1.5,
+        pointRadius: (ctx) => lstmData[ctx.dataIndex] > 0.08 ? 5 : 0,
+        pointBackgroundColor: '#ff3366',
+        backgroundColor: 'rgba(0,229,255,0.05)',
+        fill: true,
+        tension: 0.3,
+        segment: {
+          borderColor: ctx => lstmData[ctx.p1DataIndex] > 0.08 ? '#ff3366' : '#00e5ff',
+          backgroundColor: ctx => lstmData[ctx.p1DataIndex] > 0.08 ? 'rgba(255,51,102,0.1)' : 'rgba(0,229,255,0.05)',
+        }
+      }, {
+        label: 'Threshold',
+        data: Array(30).fill(0.08),
+        borderColor: 'rgba(255,179,0,0.6)',
+        borderDash: [4,4],
+        borderWidth: 1,
+        pointRadius: 0,
+        fill: false
+      }]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#4a6a88', font:{size:10} } } },
+      scales:{
+        x:{ display:false },
+        y:{ grid:{ color:'#112840' }, ticks:{ color:'#4a6a88', font:{size:10} } }
+      }
+    }
+  });
+
+  // Vitals HR
+  const vCtx = document.getElementById('vitalsChart').getContext('2d');
+  charts.vitals = new Chart(vCtx, {
+    type: 'line',
+    data: {
+      labels: vitalsHR.map((_,i) => i),
+      datasets: [{
+        label: 'Heart Rate',
+        data: vitalsHR,
+        borderColor: '#ff3366',
+        backgroundColor: 'rgba(255,51,102,0.08)',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{
+        x:{ display:false },
+        y:{ grid:{ color:'#112840' }, ticks:{ color:'#4a6a88', font:{size:9} }, suggestedMin:50, suggestedMax:160 }
+      }
+    }
+  });
+
+  // ROC Curve
+  const rCtx = document.getElementById('rocChart').getContext('2d');
+  const rocIF   = [[0,0],[0.03,0.72],[0.05,0.85],[0.08,0.91],[0.12,0.95],[0.2,0.97],[0.35,0.985],[1,1]];
+  const rocLSTM = [[0,0],[0.02,0.78],[0.04,0.88],[0.06,0.93],[0.1,0.96],[0.18,0.98],[0.3,0.99],[1,1]];
+  charts.roc = new Chart(rCtx, {
+    type: 'line',
+    data: {
+      datasets: [{
+        label: 'Isolation Forest (AUC=0.96)',
+        data: rocIF.map(p=>({x:p[0],y:p[1]})),
+        borderColor: '#00e5ff',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.4
+      }, {
+        label: 'LSTM Autoencoder (AUC=0.98)',
+        data: rocLSTM.map(p=>({x:p[0],y:p[1]})),
+        borderColor: '#00ff88',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.4
+      }, {
+        label: 'Random Baseline',
+        data: [{x:0,y:0},{x:1,y:1}],
+        borderColor: 'rgba(74,106,136,0.5)',
+        borderDash: [4,4],
+        borderWidth: 1,
+        pointRadius: 0
+      }]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#4a6a88', font:{size:10} } } },
+      scales:{
+        x:{ type:'linear', min:0, max:1, grid:{ color:'#112840' }, ticks:{ color:'#4a6a88', font:{size:9} }, title:{ display:true, text:'FPR', color:'#4a6a88', font:{size:10} } },
+        y:{ min:0, max:1, grid:{ color:'#112840' }, ticks:{ color:'#4a6a88', font:{size:9} }, title:{ display:true, text:'TPR', color:'#4a6a88', font:{size:10} } }
+      }
+    }
+  });
+
+  // Loss Chart
+  const llCtx = document.getElementById('lossChart').getContext('2d');
+  const trainLoss = Array.from({length:50}, (_,i) => 0.45 * Math.exp(-i/10) + 0.015 + Math.random()*0.01);
+  const valLoss   = Array.from({length:50}, (_,i) => 0.48 * Math.exp(-i/10) + 0.022 + Math.random()*0.015);
+  charts.loss = new Chart(llCtx, {
+    type: 'line',
+    data: {
+      labels: Array.from({length:50},(_,i)=>i+1),
+      datasets: [{
+        label: 'Train Loss',
+        data: trainLoss,
+        borderColor: '#00e5ff',
+        backgroundColor: 'transparent',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        tension: 0.4
+      }, {
+        label: 'Val Loss',
+        data: valLoss,
+        borderColor: '#c084fc',
+        backgroundColor: 'transparent',
+        borderWidth: 1.5,
+        pointRadius: 0,
+        tension: 0.4
+      }]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#4a6a88', font:{size:10} } } },
+      scales:{
+        x:{ grid:{ color:'#112840' }, ticks:{ color:'#4a6a88', font:{size:9} }, title:{ display:true, text:'Epoch', color:'#4a6a88', font:{size:10} } },
+        y:{ grid:{ color:'#112840' }, ticks:{ color:'#4a6a88', font:{size:9} } }
+      }
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════
+   LIVE UPDATES
+═══════════════════════════════════════════ */
+function startSyncClock() {
+  setInterval(() => {
+    document.getElementById('syncTime').textContent = 'Sync: ' + new Date().toLocaleTimeString();
+  }, 1000);
+}
+
+function startLiveTick() {
+  setInterval(() => {
+    // Traffic
+    trafficData.shift();
+    const newTraffic = Math.floor(Math.random()*140+60);
+    trafficData.push(newTraffic);
+    if (charts.traffic) {
+      charts.traffic.data.datasets[0].data = [...trafficData];
+      charts.traffic.update('none');
+    }
+    // Block count
+    const cur = parseInt(document.getElementById('mBlocks').textContent) || 147;
+    if (Math.random() < 0.15) {
+      document.getElementById('mBlocks').textContent = cur + 1;
+      document.getElementById('bcTotalBlocks').textContent = cur + 1;
+    }
+  }, 2000);
+}
+
+/* ═══════════════════════════════════════════
+   MONITOR
+═══════════════════════════════════════════ */
+function toggleMonitor() {
+  monitorRunning = !monitorRunning;
+  const btn = document.getElementById('btnStartMon');
+  const lbl = document.getElementById('monStatusLabel');
+  if (monitorRunning) {
+    btn.textContent = '⏹ STOP MONITORING';
+    btn.className = 'btn btn-red';
+    lbl.textContent = 'RUNNING';
+    lbl.className = 'chip chip-green';
+    startMonitorTick();
+  } else {
+    btn.textContent = '▶ START MONITORING';
+    btn.className = 'btn btn-green';
+    lbl.textContent = 'IDLE';
+    lbl.className = 'chip chip-grey';
+    clearInterval(monitorTimer);
+  }
+}
+
+function startMonitorTick() {
+  monitorTimer = setInterval(() => {
+    // LSTM error
+    lstmData.shift();
+    const isAnomaly = Math.random() < 0.18;
+    const newErr = isAnomaly ? (Math.random()*0.2+0.09) : (Math.random()*0.05+0.01);
+    lstmData.push(newErr);
+
+    if (charts.lstm) {
+      charts.lstm.data.datasets[0].data = [...lstmData];
+      charts.lstm.update('none');
+    }
+
+    if (newErr > 0.08) {
+      lstmAnomalyCount++;
+      document.getElementById('lstmAnomalyCount').textContent = lstmAnomalyCount + ' Detected';
+      addAlert(newErr);
+    }
+
+    // Vitals
+    vitalsHR.shift();
+    vitalsHR.push(Math.floor(Math.random()*40 + 65));
+    if (charts.vitals) {
+      charts.vitals.data.datasets[0].data = [...vitalsHR];
+      charts.vitals.update('none');
+    }
+  }, 1800);
+}
+
+function addAlert(score) {
+  const devices = ['ECG-MON-04','SPO2-01','TEMP-02','BP-MON-03'];
+  const dev = devices[Math.floor(Math.random()*devices.length)];
+  const item = document.createElement('div');
+  item.className = 'feed-item';
+  item.innerHTML = `
+    <div class="feed-icon">🚨</div>
+    <div class="feed-body">
+      <div class="feed-title">${dev} — Anomaly Detected</div>
+      <div class="feed-time">${new Date().toLocaleTimeString()} · Score: ${score.toFixed(3)} · Logged ✓</div>
+    </div>
+    <div class="feed-score">${score.toFixed(3)}</div>`;
+  const q = document.getElementById('alertQueue');
+  const placeholder = q.querySelector('p');
+  if (placeholder) placeholder.remove();
+  q.insertBefore(item, q.firstChild);
+  showAlertStrip(`Anomaly on ${dev} — Score: ${score.toFixed(3)} — Logged to blockchain`);
+}
+
+/* ═══════════════════════════════════════════
+   PREDICT
+═══════════════════════════════════════════ */
+function runPredict() {
+  const hr   = parseFloat(document.getElementById('pHR').value);
+  const spo2 = parseFloat(document.getElementById('pSpO2').value);
+  const temp = parseFloat(document.getElementById('pTemp').value);
+  const bp   = parseFloat(document.getElementById('pBP').value);
+  const dev  = document.getElementById('pDeviceId').value;
+  const model= document.getElementById('pModel').value;
+
+  // Simulate ML scoring
+  let score = 0;
+  if (hr > 120 || hr < 40)  score += 0.30;
+  if (spo2 < 90)             score += 0.35;
+  if (temp > 38.5)           score += 0.20;
+  if (bp > 160)              score += 0.25;
+  score = Math.min(1, score + Math.random()*0.1);
+
+  const isAnomaly = score > 0.5;
+  const ifScore   = (isAnomaly ? -(score * 0.9) : score * 0.2).toFixed(4);
+  const lstmErr   = isAnomaly ? (score * 0.2 + 0.05).toFixed(4) : (score * 0.03 + 0.01).toFixed(4);
+  const txHash    = '0x' + Array.from({length:20},()=>Math.floor(Math.random()*16).toString(16)).join('');
+
+  const el = document.getElementById('predictResult');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div style="background:${isAnomaly?'#1a0008':'#001a0e'};border:1px solid ${isAnomaly?'var(--red)':'var(--green)'};border-radius:12px;padding:18px;">
+      <div class="flex-between mb16">
+        <div style="font-family:var(--font-head);font-size:18px;font-weight:900;color:${isAnomaly?'var(--red)':'var(--green)'}">
+          ${isAnomaly?'⚠ ANOMALY DETECTED':'✓ NORMAL'}
+        </div>
+        <div style="font-family:var(--font-head);font-size:22px;font-weight:900;color:${isAnomaly?'var(--red)':'var(--green)'}">${score.toFixed(3)}</div>
+      </div>
+      <div class="kv-row"><span class="kv-key">Device</span><span class="kv-val">${dev}</span></div>
+      <div class="kv-row"><span class="kv-key">Model Used</span><span class="kv-val" style="color:var(--cyan)">${model.replace('_',' ').toUpperCase()}</span></div>
+      <div class="kv-row"><span class="kv-key">IF Score</span><span class="kv-val">${ifScore}</span></div>
+      <div class="kv-row"><span class="kv-key">LSTM Recon. Error</span><span class="kv-val">${lstmErr}</span></div>
+      ${isAnomaly ? `<div class="kv-row"><span class="kv-key">Blockchain Tx</span><span class="kv-val" style="color:var(--cyan);font-size:10px">${txHash}</span></div>` : ''}
+      <div class="kv-row"><span class="kv-key">Timestamp</span><span class="kv-val">${new Date().toISOString()}</span></div>
+    </div>`;
+
+  if (isAnomaly) {
+    showAlertStrip(`Anomaly on ${dev} — Score: ${score.toFixed(3)} — Logged to blockchain`);
+    const cur = parseInt(document.getElementById('mAnomalies').textContent) || 0;
+    document.getElementById('mAnomalies').textContent = cur + 1;
+  }
+  showToast(isAnomaly ? '🚨 Anomaly detected & logged to blockchain!' : '✓ No anomaly detected');
+}
+
+function clearResult() {
+  const el = document.getElementById('predictResult');
+  el.style.display = 'none';
+  el.innerHTML = '';
+}
+
+/* ═══════════════════════════════════════════
+   TRAIN
+═══════════════════════════════════════════ */
+function trainModel() {
+  const algo   = document.getElementById('trainAlgo').value;
+  const epochs = document.getElementById('trainEpochs').value;
+  const el     = document.getElementById('trainStatus');
+
+  el.innerHTML = `<div style="color:var(--amber);font-size:12px;font-weight:700;letter-spacing:1px">⏳ Training ${algo.replace('_',' ').toUpperCase()}...</div>`;
+
+  let prog = 0;
+  const steps = [
+    '⚙️ Loading dataset...',
+    '⚙️ Normalizing features...',
+    '🧠 Fitting model...',
+    `🔁 Training (${epochs} epochs)...`,
+    '📊 Evaluating on test set...',
+    '✅ Model saved to /models/'
+  ];
+
+  let si = 0;
+  const stepTimer = setInterval(() => {
+    prog += Math.random() * 20 + 8;
+    if (prog >= 100) { prog = 100; clearInterval(stepTimer); }
+    si = Math.min(si+1, steps.length-1);
+    el.innerHTML = `
+      <div style="font-size:11px;color:var(--cyan);margin-bottom:6px;font-family:var(--font-mono)">${steps[si]}</div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${prog}%"></div></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">${Math.round(prog)}% complete</div>
+      ${prog>=100?`<div style="margin-top:12px;background:#001a0e;border:1px solid #004d25;border-radius:8px;padding:12px;">
+        <div style="color:var(--green);font-size:12px;font-weight:700;margin-bottom:6px">✅ Training Complete</div>
+        <div class="kv-row"><span class="kv-key">Accuracy</span><span class="kv-val" style="color:var(--green)">${(Math.random()*2+96).toFixed(1)}%</span></div>
+        <div class="kv-row"><span class="kv-key">F1-Score</span><span class="kv-val">${(Math.random()*0.04+0.94).toFixed(3)}</span></div>
+        <div class="kv-row"><span class="kv-key">Val Loss</span><span class="kv-val">${(Math.random()*0.01+0.018).toFixed(4)}</span></div>
+      </div>`:''}`;
+    if (prog >= 100) showToast('✅ Model training complete!');
+  }, 700);
+}
+
+/* ═══════════════════════════════════════════
+   UPLOAD
+═══════════════════════════════════════════ */
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('dragover'); simulateUpload('dropped_data.csv'); });
+document.getElementById('fileInput').addEventListener('change', e => {
+  if (e.target.files[0]) simulateUpload(e.target.files[0].name);
+});
+
+function simulateUpload(name) {
+  const prog = document.getElementById('uploadProgress');
+  const bar  = document.getElementById('progressBar');
+  const pct  = document.getElementById('uploadPct');
+  const stat = document.getElementById('uploadStatus');
+  document.getElementById('uploadFileName').textContent = name;
+  prog.style.display = 'block';
+  let p = 0;
+  const t = setInterval(() => {
+    p += Math.random()*18+5;
+    if (p >= 100) { p = 100; clearInterval(t); stat.textContent = '✅ Dataset processed · 8,144 rows · 6 features detected'; showToast('✅ Dataset uploaded and preprocessed!'); }
+    else stat.textContent = p < 40 ? 'Uploading...' : p < 75 ? 'Preprocessing...' : 'Feature extraction...';
+    bar.style.width = p + '%';
+    pct.textContent = Math.round(p) + '%';
+  }, 200);
+}
+
+/* ═══════════════════════════════════════════
+   BLOCKCHAIN ACTIONS
+═══════════════════════════════════════════ */
+function filterChain() { renderChainTable(); }
+function setFilter(btn, f) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  chainFilter = f;
+  renderChainTable();
+}
+function copyHash() {
+  const h = BLOCKCHAIN_ENTRIES[0].hash;
+  navigator.clipboard.writeText(h).catch(()=>{});
+  showToast('📋 Hash copied: ' + h.slice(0,18) + '…');
+}
+function verifyChain() {
+  showToast('✅ Chain integrity verified — all 147 blocks valid');
+}
+
+/* ═══════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════ */
+function showAlertStrip(msg) {
+  const strip = document.getElementById('alertStrip');
+  if (msg) document.getElementById('alertText').textContent = msg;
+  strip.classList.add('show');
+  setTimeout(() => strip.classList.remove('show'), 6000);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function resetAll() {
+  lstmAnomalyCount = 0;
+  document.getElementById('lstmAnomalyCount').textContent = '0 Detected';
+  document.getElementById('alertQueue').innerHTML = '<p class="text-muted" style="text-align:center;padding:20px;">No active alerts</p>';
+  showToast('↺ Monitor reset');
+}
+</script>
+</body>
+</html>
